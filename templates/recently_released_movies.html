@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recently Released Movies</title>
+    <style>
+        .movie {
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+        .movie img {
+            max-width: 100%;
+            height: auto;
+        }
+        .pagination {
+            margin-top: 20px;
+        }
+        .pagination a {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            text-decoration: none;
+            color: #c81515;
+        }
+        .pagination .current {
+            font-weight: bold;
+            background-color: #167c72;
+        }
+    </style>
+</head>
+<body>
+    <div class="nvbr">
+        {% include 'navbar.html' %}
+    </div>
+    <h1>Recently Released Movies</h1>
+    <div class="movies-container">
+        {% for movie in recently_released_movies %}
+        <div class="movie">
+            <h2 style="color: aqua;">{{ movie.title }}</h2>
+            <p><strong>Release Date:</strong> {{ movie.release_date }}</p>
+            <p><strong>IMDb Rating:</strong> {{ movie.imdb_rating }}</p>
+            <p><strong>Overview:</strong> {{ movie.overview }}</p>
+            <p><strong>Genres:</strong> {{ movie.genres }}</p>
+            <p><strong>Popularity:</strong> {{ movie.popularity }}</p>
+            {% if movie.poster_url %}
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}">
+            {% else %}
+                <p>No poster available</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <!-- Pagination controls -->
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="?page={{ page - 1 }}">Previous</a>
+        {% endif %}
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+                <span class="current">{{ p }}</span>
+            {% else %}
+                <a href="?page={{ p }}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page < total_pages %}
+            <a href="?page={{ page + 1 }}">Next</a>
+        {% endif %}
+    </div>
+</body>
+</html>
