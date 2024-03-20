@@ -1,0 +1,58 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Movie Recommendation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <div class="nvbr">
+        {% include 'navbar.html' %}
+    </div>
+    
+    <div class="mrs">
+        <h1>Movie Recommendation System</h1>
+    </div>
+    
+    <div class="login-logout">
+        {% if 'username' in session %}
+            <p>Welcome, {{ session['username'] }}! <a href="{{ url_for('logout') }}">Logout</a></p>
+        {% else %}
+            <p><a href="{{ url_for('login') }}">Login</a></p>
+        {% endif %}
+    </div>
+
+    <div class="form-container">
+        <form method="POST" action="/recommend">
+            <label for="movie_name">Enter your favorite movie:</label>
+            <input type="text" id="movie_name" name="movie_name" required><br><br>
+            <button type="submit">Get Recommendations</button>
+        </form>
+    </div>
+
+    {% if movie_name %}
+        <div class="recommendations">
+            <h3 style="color:blueviolet">Top similar movies for "{{ movie_name }}"</h3>
+            <div class="movie-boxes">
+                {% for recommendation in recommendations %}
+                    <div class="movie-box">
+                        <h4 style="color:aqua;">{{ recommendation['title'] }}</h4>
+                        <p style="color: bisque;"><strong>Genre:</strong> <span style="color: white;">{{ recommendation['genre'] }}</span></p>
+                        <p><strong style="color: bisque;">Director:</strong> <span style="color: white;">{{ recommendation['director'] }}</span></p>
+                        <p><strong style="color: bisque;">Tagline:</strong> <span style="color: white;">{{ recommendation['tagline'] }}</span></p>
+                        <p><strong style="color: bisque;">IMDb:</strong> <span style="color: white;">{{ recommendation['imdb'] }}</span></p>
+                        <p><strong style="color: bisque;">OTT:</strong> <span style="color: white;">{{ recommendation['ott'] }}</span></p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+</body>
+
+</html>
