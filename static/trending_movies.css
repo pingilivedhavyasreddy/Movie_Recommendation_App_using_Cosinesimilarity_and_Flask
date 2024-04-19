@@ -1,0 +1,55 @@
+/* Trending Movies Page Styles */
+.mrs {
+    margin-top: 80px;
+    text-align: center;
+}
+
+.trending-movies {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.trending-movies ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.trending-movies li {
+    background-color: #b72818;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    width: 80%;
+    max-width: 600px;
+}
+
+.trending-movies h2 {
+    margin-top: 0;
+}
+
+.trending-movies p {
+    margin-bottom: 10px;
+}
+
+.trending-movies img {
+    max-width: 100px;
+    margin-right: 20px;
+}
+
+/* Pagination Styles */
+.pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.pagination a {
+    color: white;
+    text-decoration: none;
+    margin: 0 5px;
+}
+
+.pagination a:hover {
+    text-decoration: underline;
+}
