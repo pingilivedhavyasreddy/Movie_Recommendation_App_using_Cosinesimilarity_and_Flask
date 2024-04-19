@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies</title>
+</head>
+<body>
+    <h1>Movies Released in 2021-2024</h1>
+    <ul>
+        {% for movie in movies %}
+            <li>
+                <h2>{{ movie.title }}</h2>
+                {% if movie.poster_path %}
+                    <img src="https://image.tmdb.org/t/p/w200/{{ movie.poster_path }}" alt="{{ movie.title }} Poster">
+                {% else %}
+                    <p>No poster available</p>
+                {% endif %}
+                <p>Release Date: {{ movie.release_date }}</p>
+                <p>Overview: {{ movie.overview }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

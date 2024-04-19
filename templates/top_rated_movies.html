@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Rated Movies</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='top_rated.css') }}">
+</head>
+
+<body>
+    <div class="nvbr">
+        {% include 'navbar.html' %}
+    </div>
+    
+    <div class="mrs">
+        <h1>Top Rated Movies</h1>
+    </div>
+    
+    <div class="login-logout">
+        {% if 'username' in session %}
+            <p>Welcome, {{ session['username'] }}! <a href="{{ url_for('logout') }}">Logout</a></p>
+        {% else %}
+            <p><a href="{{ url_for('login') }}">Login</a></p>
+        {% endif %}
+    </div>
+
+    <div class="top-rated-movies">
+        {% if top_rated_movies %}
+            <ul>
+                {% for movie in top_rated_movies %}
+                    <li>
+                        <h2 style="color: aqua;">{{ movie.title }}</h2>
+                        <p><strong style="color: bisque;">Rating:</strong> {{ movie.vote_average }}</p>
+                        <p><strong style="color: bisque;">Release Date:</strong> {{ movie.release_date }}</p>
+                        <p><strong style="color: bisque;">Overview:</strong> {{ movie.overview }}</p>
+                        <!-- <p><strong>Genres:</strong> {{ movie.genre }}</p> -->
+                        {% if movie.poster_path %}
+                            <img src="https://image.tmdb.org/t/p/w185{{ movie.poster_path }}" alt="{{ movie.title }}">
+                        {% else %}
+                            <p>No poster available</p>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a href="{{ url_for('top_rated_movies', page=page-1) }}" style="color: white;">Previous</a>
+                {% endif %}
+                
+                {% if page < total_pages %}
+                    <a href="{{ url_for('top_rated_movies', page=page+1) }}" style="color: white;">Next</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <p>No top rated movies available</p>
+        {% endif %}
+    </div>
+</body>
+</html>

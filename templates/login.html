@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login_style.css') }}">
+</head>
+
+<body>
+    <section>
+        <div class="signin">
+            <div class="content">
+                <h2>Login</h2>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="form">
+                        <div class="inputBox">
+                            <input type="text" name="username" required>
+                            <i>Username</i>
+                        </div>
+                        <div class="inputBox">
+                            <input type="password" name="password" required>
+                            <i>Password</i>
+                        </div>
+                        <div class="inputBox">
+                            <input type="submit" value="Login">
+                        </div>
+                        <div class="inputBox">
+                            <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>
+

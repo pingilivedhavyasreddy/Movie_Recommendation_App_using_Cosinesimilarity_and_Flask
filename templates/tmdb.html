@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='tmdb.css') }}">
+</head>
+<body>
+    <div class="nvbr">
+        {% include 'navbar.html' %}
+    </div>
+    
+    <h1>Search for Movie Details</h1>
+    <form action="/get_movie_details" method="GET">
+        <label for="movie_name">Enter Movie Name:</label>
+        <input type="text" id="movie_name" name="name" required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
+
+    {% if movie_details %}
+        <div id="movie_details">
+            <h2 style="color:aqua">{{ movie_details.title | default('NA', true) }}</h2>
+            {% if movie_details.poster_url %}
+                <img src="{{ movie_details.poster_url }}" alt="Poster">
+            {% else %}
+                <p>No poster available</p>
+            {% endif %}
+            <p><strong style="color: bisque;">Release Date:</strong> {{ movie_details.release_date | default('NA', true) }}</p>
+            <p><strong style="color: bisque;">Overview:</strong> {{ movie_details.overview | default('NA', true) }}</p>
+            <p><strong style="color: bisque;">Popularity:</strong> {{ movie_details.popularity | default('NA', true) }}</p>
+            <p><strong style="color: bisque;">Vote Count:</strong> {{ movie_details.vote_count | default('NA', true) }}</p>
+            <p><strong style="color: bisque;">Video:</strong> {% if movie_details.video %}{{ movie_details.video }}{% else %}NA{% endif %}</p>
+            <p><strong style="color: bisque;">Vote Average:</strong> {{ movie_details.vote_average | default('NA', true) }}</p>
+            <p><strong style="color: bisque;">Genres:</strong> {% if movie_details.genres %}{{ movie_details.genres }}{% else %}NA{% endif %}</p>
+            <p><strong style="color: bisque;">Adult:</strong> {% if movie_details.adult %}{{ movie_details.adult }}{% else %}NA{% endif %}</p>
+            {% if movie_details.trailer_url %}
+                <iframe width="560" height="315" src="{{ movie_details.trailer_url }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            {% endif %}
+        </div>
+    {% endif %}
+</body>
+</html>

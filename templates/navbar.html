@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Movie Recommendation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
+</head>
+<nav>
+    <div class="left">
+        <h1>Movie App</h1>
+    </div>
+    <div class="right">
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('register') }}">Register</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropbtn">More</a>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('tmdb') }}">tmdb</a>
+                    <a href="{{ url_for('top_rated_movies') }}">top_rated</a>
+                    <a href="{{ url_for('recently_released_movies') }}">recent_movies</a>
+                    <a href="{{ url_for('trending_movies') }}">trending_movies</a>
+                    
+                </div>
+            </li>
+            <li><a href="{{ url_for('contact') }}">Contact_us</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+<br><br>

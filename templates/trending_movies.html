@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Movies</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='trending_movies.css') }}">
+</head>
+
+<body>
+    <div class="nvbr">
+        {% include 'navbar.html' %}
+    </div>
+    
+    <div class="mrs">
+        <h1>Trending Movies</h1>
+    </div>
+    
+    <div class="trending-movies">
+        <ul>
+            {% for movie in trending_movies %}
+                <li>
+                    <h2 style="color: aqua;">{{ movie.title }}</h2>
+                    <p><strong style="color: bisque;">Release Date:</strong> {{ movie.release_date }}</p>
+                    <p><strong style="color: bisque;">Overview:</strong>{{movie.overview}}</p>
+                    {% if movie.poster_path %}
+                        <img src="https://image.tmdb.org/t/p/w185{{ movie.poster_path }}" alt="{{ movie.title }}">
+                    {% else %}
+                        <p>No poster available</p>
+                    {% endif %}
+
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <!-- Pagination -->
+<div class="pagination">
+    {% if page > 1 %}
+        <a href="{{ url_for('trending_movies', page=page-1) }}" style="color: white;">Previous</a>
+    {% endif %}
+    
+    {% if page < total_pages %}
+        <a href="{{ url_for('trending_movies', page=page+1) }}" style="color: white;">Next</a>
+    {% endif %}
+</div>
+</body>
+</html>
