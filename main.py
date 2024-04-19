@@ -8,9 +8,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import difflib
 import requests
-from flask import session, g 
+from flask import session, g  # Import g object
 from datetime import datetime
-
+import math
 app = Flask(__name__)
 
 app.secret_key = 'key' 
@@ -29,6 +29,15 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
 
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', [validators.DataRequired()])
+    password = PasswordField('Password', [
+        validators.DataRequired(),
+        validators.EqualTo('confirm_password', message='Passwords must match')
+    ])
+    confirm_password = PasswordField('Confirm Password')
+    submit = SubmitField('Register')
+
 class Contact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -38,14 +47,6 @@ class Contact(db.Model):
     def __repr__(self):
         return f'<Contact {self.name}>'
 
-class RegistrationForm(FlaskForm):
-    username = StringField('Username', [validators.DataRequired()])
-    password = PasswordField('Password', [
-        validators.DataRequired(),
-        validators.EqualTo('confirm_password', message='Passwords must match')
-    ])
-    confirm_password = PasswordField('Confirm Password')
-    submit = SubmitField('Register')
 
 # Load the movies data
 movies_data = pd.read_csv('movies.csv')
@@ -73,6 +74,7 @@ combined_features = (
 vectorizer = TfidfVectorizer()
 feature_vectors = vectorizer.fit_transform(combined_features)
 similarity = cosine_similarity(feature_vectors)
+
 
 @app.route('/')
 def home():
@@ -115,6 +117,8 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html', form=form)
+
+
 
 @app.route('/recommend', methods=['POST', 'GET'])
 def recommend():
@@ -190,6 +194,8 @@ def recommend():
 
     return render_template('index.html', username=session['username'])
 
+
+
 def get_ott_info(row):
     ott_info = []
     if row['Netflix'].values[0] == 1:
@@ -211,59 +217,50 @@ def get_tmdb_session():
         g.tmdb_session = requests.Session()
     return g.tmdb_session
 
+
 @app.route('/get_movie_details', methods=['GET'])
 def get_movie_details():
     movie_name = request.args.get('name')
     if not movie_name:
         return render_template('tmdb.html', error='Movie name is required'), 400
 
-    tmdb_session = get_tmdb_session()  # Get the TMDB session
-    # Constructing the URL to search for the movie in TMDb API
+    tmdb_session = get_tmdb_session()
     search_url = f'https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={movie_name}&language=en-US'
 
-    # Fetching search results from TMDb API
     search_response = tmdb_session.get(search_url)
     if search_response.status_code != 200:
         return render_template('tmdb.html', error='Failed to search for the movie'), search_response.status_code
 
     search_results = search_response.json().get('results')
 
-    # Checking if any search results are found
     if not search_results:
         return render_template('tmdb.html', error='No movie found with the given name'), 404
 
-    # Considering only the first search result (most relevant)
     movie_id = search_results[0].get('id')
-
-    # Constructing the URL to fetch movie details from TMDb API using the obtained movie ID
     movie_url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}&language=en-US'
 
-    # Fetching movie details from TMDb API
     movie_response = tmdb_session.get(movie_url)
     if movie_response.status_code != 200:
         return render_template('tmdb.html', error='Failed to fetch movie details'), movie_response.status_code
 
     movie_data = movie_response.json()
 
-    # Extracting relevant movie details
-    title = movie_data.get('title')
-    overview = movie_data.get('overview')
-    release_date = movie_data.get('release_date')
+    title = movie_data.get('title', 'NA')
+    overview = movie_data.get('overview', 'NA')
+    release_date = movie_data.get('release_date', 'NA')
     poster_path = movie_data.get('poster_path')
-    popularity = movie_data.get('popularity')
-    vote_count = movie_data.get('vote_count')
-    video = movie_data.get('video')
-    vote_average = movie_data.get('vote_average')
-    genres = ", ".join(genre['name'] for genre in movie_data.get('genres'))
-    adult = movie_data.get('adult')
+    popularity = movie_data.get('popularity', 'NA')
+    vote_count = movie_data.get('vote_count', 'NA')
+    video = movie_data.get('video', 'NA')
+    vote_average = movie_data.get('vote_average', 'NA')
+    genres = ", ".join(genre['name'] for genre in movie_data.get('genres', []))
+    adult = movie_data.get('adult', 'NA')
 
-    # Constructing the full URL for the poster image with medium size
     if poster_path:
-        poster_url = f'https://image.tmdb.org/t/p/w300{poster_path}'  # Using medium size (300px wide)
+        poster_url = f'https://image.tmdb.org/t/p/w300{poster_path}'
     else:
         poster_url = None
 
-    # Constructing the movie_details dictionary
     movie_details = {
         'title': title,
         'overview': overview,
@@ -276,10 +273,11 @@ def get_movie_details():
         'genres': genres,
         'adult': adult
     }
+
     tmdb_session.close()
     return render_template('tmdb.html', movie_details=movie_details)
 
-from flask import request
+
 
 @app.route('/recently_released_movies')
 def recently_released_movies():
@@ -340,8 +338,64 @@ def recently_released_movies():
     # Calculate total number of pages for pagination
     total_results = len(discover_results)
     total_pages = (total_results + movies_per_page - 1) // movies_per_page
+
+    # Pass recently released movies, pagination information, and current page number to the template
     return render_template('recently_released_movies.html', recently_released_movies=recently_released_movies, page=page, total_pages=total_pages)
-from flask import request
+
+
+
+@app.route('/top_rated_movies')
+def top_rated_movies():
+    # Fetch top rated movies from TMDB API
+    page = request.args.get('page', default=1, type=int)
+    movies_per_page = 10  # Number of movies per page
+
+    url = f'https://api.themoviedb.org/3/movie/top_rated?api_key={TMDB_API_KEY}&language=en-US&page={page}'
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        top_rated_movies = response.json().get('results', [])
+        
+        # Calculate total number of pages for pagination
+        total_results = len(top_rated_movies)
+        total_pages = (total_results + movies_per_page - 1) // movies_per_page
+
+        # Extract movies for the current page
+        start_index = (page - 1) * movies_per_page
+        end_index = start_index + movies_per_page
+        movies_for_page = top_rated_movies[start_index:end_index]
+
+        return render_template('top_rated_movies.html', top_rated_movies=movies_for_page, page=page, total_pages=total_pages)
+    else:
+        error_message = 'Failed to fetch top rated movies'
+        return render_template('error.html', error_message=error_message), response.status_code
+
+
+@app.route('/trending_movies')
+def trending_movies():
+    # Fetch trending movies from TMDB API
+    page = request.args.get('page', default=1, type=int)
+    items_per_page = 10  # Number of movies per page
+
+    url = f'https://api.themoviedb.org/3/trending/movie/week?api_key={TMDB_API_KEY}&page={page}'
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        trending_movies = response.json().get('results', [])
+        
+        # Calculate total number of pages for pagination
+        total_results = len(trending_movies)
+        total_pages = math.ceil(total_results / items_per_page)
+
+        # Extract movies for the current page
+        start_index = (page - 1) * items_per_page
+        end_index = start_index + items_per_page
+        movies_for_page = trending_movies[start_index:end_index]
+
+        return render_template('trending_movies.html', trending_movies=movies_for_page, page=page, total_pages=total_pages)
+    else:
+        error_message = 'Failed to fetch trending movies'
+        return render_template('error.html', error_message=error_message), response.status_code
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
@@ -362,10 +416,6 @@ def contact():
     # Render the contact form template
     return render_template('contact.html')
 
-@app.route('/logout')
-def logout():
-    session.pop('username', None)
-    return redirect(url_for('login'))
 
 @app.route('/users')
 def view_users():
@@ -374,7 +424,6 @@ def view_users():
     users = User.query.all()
     return render_template('users.html', users=users)
 
-
 @app.route('/contact_details')
 def contact_details():
     # Query the database for stored contact details
@@ -382,6 +431,11 @@ def contact_details():
 
     # Render the template to display contact details
     return render_template('contact_details.html', contacts=contacts)
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
